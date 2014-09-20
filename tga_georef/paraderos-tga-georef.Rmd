@@ -101,8 +101,7 @@ print(tga_map2, "chart")
 
 ## Información para reproducibilidad
 
-
-* Código fuente en: [https://github.com/jmcastagnetto/lima-datosabiertos-r/tga_georef](https://github.com/jmcastagnetto/lima-datosabiertos-r/tga_georef)
+* Código fuente en: [https://github.com/jmcastagnetto/lima-datosabiertos-r/tree/master/tga_georef](https://github.com/jmcastagnetto/lima-datosabiertos-r/tree/master/tga_georef)
 * Publicado en RPubs: [http://rpubs.com/jesuscastagnetto/paraderos-tga-georef](http://rpubs.com/jesuscastagnetto/paraderos-tga-georef)
 
 
