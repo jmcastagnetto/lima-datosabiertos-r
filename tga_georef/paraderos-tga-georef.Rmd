@@ -1,5 +1,5 @@
 ---
-title: "Mapeando los paraderos de la ruta TGA"
+title: "Mapeando los paraderos del corredor TGA"
 author: "Jesus M. Castagnetto"
 date: "2014-09-19"
 output:
