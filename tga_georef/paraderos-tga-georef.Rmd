@@ -18,7 +18,7 @@ Vamos a usar el API del [http://lima.datosabiertos.pe/home/](Portal de Datos Abi
 # Pasamos el URL de API endpoint, y la API developer key
 # por defecto sólo retorna los datos, sin metadata
 get_data <- function (api_url, api_key, include_metadata=FALSE) {
-    api_data <- fromJSON(paste0(api_url, api_key))
+    api_data <- fromJSON(paste0(api_url, "?auth_key=", api_key))
     data <- extract_dataframe(api_data)
     if (include_metadata==FALSE) {
         return(data)
@@ -54,7 +54,7 @@ extract_dataframe <- function(api_data) {
 require(jsonlite, quietly=TRUE)
 source("api_key.R")
 # formato: api_key <- "YOUR API KEY"
-api_url <- "http://api.lima.datosabiertos.pe/datastreams/invoke/PARAD-GEO-REFER-DE-LA?auth_key="
+api_url <- "http://api.lima.datosabiertos.pe/datastreams/invoke/PARAD-GEO-REFER-DE-LA"
 fulldata <- get_data(api_url, api_key, include_metadata = TRUE)
 stops <- fulldata$data
 # corregir los tipos de datos de algunas columnas
@@ -68,7 +68,7 @@ stops$TAP <- as.factor(stops$TAP)
 
 Usamos el paquete `ggmap` para generar un mapa estático (formato PNG).
 
-```{r}
+```{r message=FALSE}
 require(ggmap, quietly=TRUE)
 # usamos el tipo "toner" de stamen
 lima_tga <- get_map(c(lon=mean(stops$LONGITUD), lat=mean(stops$LATITUD)),
@@ -84,7 +84,7 @@ tga_map + geom_point(data=stops, size=2,
 Y usando el paquete `googleVis`, creamos incrustamos un mapa interactivo
 usando el API de Google Maps.
 
-```{r results='asis'}
+```{r results='asis', message=FALSE}
 require(googleVis, quietly=TRUE)
 d2 <- data.frame("latlong"=paste(stops$LATITUD, stops$LONGITUD, sep=":"),
            "tip" = paste("<b>Corredor: TGA (Troncal)</b>",
