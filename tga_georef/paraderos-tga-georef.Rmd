@@ -1,0 +1,111 @@
+---
+title: "Mapeando la troncal de TGA"
+author: "Jesus M. Castagnetto"
+date: "2014-09-19"
+output:
+    html_document:
+        theme: readable
+        highlight: zenburn
+---
+
+## Obteniendo y procesando los datos
+
+Vamos a usar el API del [http://lima.datosabiertos.pe/home/](Portal de Datos Abiertos de Lima Metropolitana).
+
+**Primero**: Definimos un par de funciones que podamos reusar
+
+```{r}
+# Pasamos el URL de API endpoint, y la API developer key
+# por defecto sólo retorna los datos, sin metadata
+get_data <- function (api_url, api_key, include_metadata=FALSE) {
+    api_data <- fromJSON(paste0(api_url, api_key))
+    data <- extract_dataframe(api_data)
+    if (include_metadata==FALSE) {
+        return(data)
+    } else {
+        metadata <- api_data[c("id", "title", "description", "user",
+                               "tags", "created_at", "source", "link")]
+        metadata["timestamp"] <- as.Date(api_data$result$fTimestamp,
+                                         origin = "1970-01-01")
+        return(list(metadata=metadata, data=data))
+    }
+}
+
+# Hace el trabajo de convertir los datos de un formato secuencial
+# a una data.frame de R
+extract_dataframe <- function(api_data) {
+    header <- subset(api_data$result$fArray, fHeader==TRUE)$fStr
+    values <- subset(api_data$result$fArray, is.na(fHeader))$fStr
+    header_len <- api_data$result$fCols
+    df <- as.data.frame(
+        matrix(values,
+               ncol=header_len,
+               byrow = TRUE),
+        stringsAsFactors=FALSE)
+    colnames(df) <- header
+    return(df)
+}
+```
+
+**Segundo**: Conseguimos los datos de la geolocalización de los paraderos del corredor TGA troncal en Lima.
+
+```{r}
+# cargando las librerías necesarias
+require(jsonlite, quietly=TRUE)
+source("api_key.R")
+# formato: api_key <- "YOUR API KEY"
+api_url <- "http://api.lima.datosabiertos.pe/datastreams/invoke/PARAD-GEO-REFER-DE-LA?auth_key="
+fulldata <- get_data(api_url, api_key, include_metadata = TRUE)
+stops <- fulldata$data
+# corregir los tipos de datos de algunas columnas
+stops$LONGITUD <- as.numeric(stops$LONGITUD)
+stops$LATITUD <- as.numeric(stops$LATITUD)
+stops$CORREDOR <- as.factor(stops$CORREDOR)
+stops$TAP <- as.factor(stops$TAP)
+```
+
+## Creamos un mapa simple, no interactivo
+
+Usamos el paquete `ggmap` para generar un mapa estático (formato PNG).
+
+```{r}
+require(ggmap, quietly=TRUE)
+# usamos el tipo "toner" de stamen
+lima_tga <- get_map(c(lon=mean(stops$LONGITUD), lat=mean(stops$LATITUD)),
+                    source="stamen", maptype="toner", zoom=12)
+tga_map <- ggmap(lima_tga, extent="device")
+tga_map + geom_point(data=stops, size=2,
+                    aes(x=LONGITUD, y=LATITUD, col="red")) +
+    theme(legend.position="none")
+```
+
+## Finalmente un mapa interactivo
+
+Y usando el paquete `googleVis`, creamos incrustamos un mapa interactivo
+usando el API de Google Maps.
+
+```{r results='asis'}
+require(googleVis, quietly=TRUE)
+d2 <- data.frame("latlong"=paste(stops$LATITUD, stops$LONGITUD, sep=":"),
+           "tip" = paste("<b>Corredor: TGA (Troncal)</b>",
+                          stops$NOMBRE, sep="<br/>"))
+tga_map2 <- gvisMap(d2, locationvar="latlong", tipvar="tip",
+                    options=list(
+                        showTip=TRUE,
+                        enableScrollWheel=TRUE,
+                        mapType='normal',
+                        zoomLevel=13,
+                        useMapTypeControl=TRUE))
+print(tga_map2, "chart")
+```
+
+## Información para reproducibilidad
+
+
+* Código fuente en: [https://github.com/jmcastagnetto/lima-datosabiertos-r/tga_georef](https://github.com/jmcastagnetto/lima-datosabiertos-r/tga_georef)
+* Publicado en RPubs: [http://rpubs.com/jesuscastagnetto/paraderos-tga-georef](http://rpubs.com/jesuscastagnetto/paraderos-tga-georef)
+
+
+```{r}
+sessionInfo()
+```
