@@ -7,4 +7,6 @@
 
 ## Ejemplos
 
-* `tga_reoref/paraderos-tga-georef.Rmd`: Un ejemplo de mapear los paraderos georeferenciados de la ruta troncal de TGA
+* [`tga_reoref/paraderos-tga-georef.Rmd`](tga_reoref/paraderos-tga-georef.Rmd):
+  Un ejemplo de mapear los paraderos georeferenciados de la rutas del
+corredor TGA
