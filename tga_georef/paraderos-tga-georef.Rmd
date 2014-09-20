@@ -1,16 +1,17 @@
 ---
-title: "Mapeando la troncal de TGA"
+title: "Mapeando los paraderos de la ruta TGA"
 author: "Jesus M. Castagnetto"
 date: "2014-09-19"
 output:
     html_document:
+        toc: true
         theme: readable
         highlight: zenburn
 ---
 
 ## Obteniendo y procesando los datos
 
-Vamos a usar el API del [http://lima.datosabiertos.pe/home/](Portal de Datos Abiertos de Lima Metropolitana).
+Vamos a usar el API del [Portal de Datos Abiertos de Lima Metropolitana](ttp://lima.datosabiertos.pe/home/).
 
 **Primero**: Definimos un par de funciones que podamos reusar
 
@@ -55,8 +56,23 @@ require(jsonlite, quietly=TRUE)
 source("api_key.R")
 # formato: api_key <- "YOUR API KEY"
 api_url <- "http://api.lima.datosabiertos.pe/datastreams/invoke/PARAD-GEO-REFER-DE-LA"
-fulldata <- get_data(api_url, api_key, include_metadata = TRUE)
-stops <- fulldata$data
+troncal_fulldata <- get_data(api_url, api_key, TRUE)
+troncal <- troncal_fulldata$data
+```
+
+**Tecero**: Ahora los datos de las rutas alimentadoras
+
+```{r}
+api_url <- "http://api.lima.datosabiertos.pe/datastreams/invoke/PARAD-GEO-REFER-DEL-69193"
+alimentadora_fulldata <- get_data(api_url, api_key, TRUE)
+alimentadora <- alimentadora_fulldata$data
+```
+
+**Cuarto**: Combinamos las dos data frames y ajustamos los tipos
+de algunas columnas
+
+```{r}
+stops <- rbind(troncal,alimentadora)
 # corregir los tipos de datos de algunas columnas
 stops$LONGITUD <- as.numeric(stops$LONGITUD)
 stops$LATITUD <- as.numeric(stops$LATITUD)
@@ -64,7 +80,7 @@ stops$CORREDOR <- as.factor(stops$CORREDOR)
 stops$TAP <- as.factor(stops$TAP)
 ```
 
-## Creamos un mapa simple, no interactivo
+## Un mapa simple, no interactivo
 
 Usamos el paquete `ggmap` para generar un mapa estático (formato PNG).
 
@@ -75,27 +91,29 @@ lima_tga <- get_map(c(lon=mean(stops$LONGITUD), lat=mean(stops$LATITUD)),
                     source="stamen", maptype="toner", zoom=12)
 tga_map <- ggmap(lima_tga, extent="device")
 tga_map + geom_point(data=stops, size=2,
-                    aes(x=LONGITUD, y=LATITUD, col="red")) +
-    theme(legend.position="none")
+                    aes(x=LONGITUD, y=LATITUD, col=TAP))
 ```
 
-## Finalmente un mapa interactivo
+## Un mapa interactivo
 
-Y usando el paquete `googleVis`, creamos incrustamos un mapa interactivo
+Y usando el paquete `googleVis`, incrustamos un mapa interactivo
 usando el API de Google Maps.
 
 ```{r results='asis', message=FALSE}
 require(googleVis, quietly=TRUE)
+rutas <- as.character(stops$TAP)
 d2 <- data.frame("latlong"=paste(stops$LATITUD, stops$LONGITUD, sep=":"),
-           "tip" = paste("<b>Corredor: TGA (Troncal)</b>",
+           "tip" = paste(paste0("<b>Corredor: TGA - Ruta: ",
+                                rutas, "</b>"),
                           stops$NOMBRE, sep="<br/>"))
 tga_map2 <- gvisMap(d2, locationvar="latlong", tipvar="tip",
                     options=list(
                         showTip=TRUE,
                         enableScrollWheel=TRUE,
                         mapType='normal',
-                        zoomLevel=13,
-                        useMapTypeControl=TRUE))
+                        zoomLevel=19,
+                        useMapTypeControl=TRUE,
+                        width=900, height=900))
 print(tga_map2, "chart")
 ```
 
