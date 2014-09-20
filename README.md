@@ -1,8 +1,9 @@
 # Usando el API de datos abiertos de Lima Metropolitana
 
-## Documentación de la API
 
-[http://es.wiki.junar.com/index.php/Lima_API](http://es.wiki.junar.com/index.php/Lima_API)
+
+* Portal de Datos Abiertos de Lima Metropolitana: [http://lima.datosabiertos.pe/home/](http://lima.datosabiertos.pe/home/)
+* Documentación de la API: [http://es.wiki.junar.com/index.php/Lima_API](http://es.wiki.junar.com/index.php/Lima_API)
 
 ## Ejemplos
 
