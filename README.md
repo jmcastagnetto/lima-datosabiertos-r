@@ -7,6 +7,7 @@
 
 ## Ejemplos
 
-* [`tga_reoref/paraderos-tga-georef.Rmd`](tga_reoref/paraderos-tga-georef.Rmd):
+* [tga_georef/paraderos-tga-georef.Rmd](tga_georef/paraderos-tga-georef.Rmd):
   Un ejemplo de mapear los paraderos georeferenciados de la rutas del
 corredor TGA
+    * HTML Publicado en RPubs: [http://rpubs.com/jesuscastagnetto/paraderos-tga-georef](http://rpubs.com/jesuscastagnetto/paraderos-tga-georef)
